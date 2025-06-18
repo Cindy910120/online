@@ -15,6 +15,13 @@ import { hobbySkills } from './hobby-skills'
 import { fitnessSkills } from './fitness-skills'
 import { languageSkills } from './language-skills'
 import { softSkills } from './soft-skills'
+// 新增的興趣技能樹
+import { artCreationSkills } from './art-creation-skills'
+import { performingArtsSkills } from './performing-arts-skills'
+import { knowledgeLearningSkills } from './knowledge-learning-skills'
+import { wellnessSkills } from './wellness-skills'
+import { sportsSkills } from './sports-skills'
+import { entertainmentLeisureSkills } from './entertainment-leisure-skills'
 
 // 技能樹介面定義
 export interface Skill {
@@ -70,7 +77,15 @@ export const skillTreesCollection: Record<string, SkillTree> = {
   '興趣技能': hobbySkills,
   '體能健康': fitnessSkills,
   '語言能力': languageSkills,
-  '軟技能': softSkills
+  '軟技能': softSkills,
+  
+  // 新增的專門興趣技能樹
+  //'藝術與創作': artCreationSkills,
+  '表演藝術': performingArtsSkills,
+  '知識學習': knowledgeLearningSkills,
+  '身心健康': wellnessSkills,
+  '運動競技': sportsSkills,
+  '娛樂休閒': entertainmentLeisureSkills
 }
 
 // 為了向後相容，保持原有的 skillTreesConfig 格式
@@ -96,6 +111,8 @@ export const skillTreesConfig = Object.fromEntries(
 
 // 輔助函數：根據科系獲取對應的技能樹
 export function getSkillTreeByMajor(major: string): SkillTree | null {
+  console.log('🔍 getSkillTreeByMajor 接收到的科系參數:', major)
+  
   const majorMap: Record<string, string> = {
     // 工程學群
     'computer-science': '資訊工程',
@@ -135,33 +152,48 @@ export function getSkillTreeByMajor(major: string): SkillTree | null {
     'marketing': '企業管理',
     'human-resources': '企業管理',
     'logistics': '企業管理',
-    
-    // 中文別名對應
+      // 中文別名對應
     '電機工程': '電機工程',
+    '電機工程學群': '電機工程',
     '電機': '電機工程',
     '資訊工程': '資訊工程',
+    '資訊工程學群': '資訊工程',
     '資工': '資訊工程',
     '資科': '資訊工程',
     '計算機科學': '資訊工程',
     '機械工程': '機械工程',
+    '機械工程學群': '機械工程',
     '機械': '機械工程',
     '化學工程': '化學工程',
+    '化學工程學群': '化學工程',
     '化工': '化學工程',
     '土木工程': '土木工程',
+    '土木工程學群': '土木工程',
     '土木': '土木工程',
     '材料工程': '材料工程',
+    '材料工程學群': '材料工程',
     '材料': '材料工程',
     '數學': '數學',
+    '數理化學群': '數學',
     '物理學': '物理學',
     '物理': '物理學',
     '醫學': '醫學',
+    '醫藥衛生學群': '醫學',
     '建築學': '建築學',
+    '建築與設計學群': '建築學',
     '建築': '建築學',
     '心理學': '心理學',
+    '社會與心理學群': '心理學',
     '心理': '心理學',
     '企業管理': '企業管理',
-    '管理': '企業管理'
-  }
+    '管理學群': '企業管理',
+    '管理': '企業管理'  }
+  
+  console.log('🎯 科系對應映射查找結果:', {
+    輸入科系: major,
+    映射結果: majorMap[major],
+    最終技能樹: majorMap[major] || '資訊工程'
+  })
   
   const skillTreeKey = majorMap[major] || '資訊工程' // 預設為資訊工程
   return skillTreesCollection[skillTreeKey]
@@ -307,29 +339,271 @@ export function getSkillTreeStats(treeName: string) {
 // 輔助函數：根據興趣獲取對應的技能樹
 export function getSkillTreeByInterest(interest: string): SkillTree | null {
   const interestMap: Record<string, string> = {
-    '繪畫': '興趣技能',
-    '畫畫': '興趣技能',
-    '美術': '興趣技能',
-    '音樂': '興趣技能',
-    '唱歌': '興趣技能',
-    '舞蹈': '興趣技能',
-    '攝影': '興趣技能',
-    '寫作': '語言能力',
-    '閱讀': '語言能力',
+    // 🎨 藝術與創作類
+    '繪畫': '藝術與創作',
+    '畫畫': '藝術與創作',
+    '美術': '藝術與創作',
+    '水彩': '藝術與創作',
+    '油畫': '藝術與創作',
+    '數位畫': '藝術與創作',
+    '數位繪圖': '藝術與創作',
+    'digital art': '藝術與創作',
+    '插畫': '藝術與創作',
+    '素描': '藝術與創作',
+    '攝影': '藝術與創作',
+    '風景攝影': '藝術與創作',
+    '人像攝影': '藝術與創作',
+    '街拍': '藝術與創作',
+    '紀實攝影': '藝術與創作',
+    '商業攝影': '藝術與創作',
+    '書法': '藝術與創作',
+    '手寫字': '藝術與創作',
+    '毛筆字': '藝術與創作',
+    '硬筆書法': '藝術與創作',
+    '手工藝': '藝術與創作',
+    '編織': '藝術與創作',
+    '黏土': '藝術與創作',
+    '陶藝': '藝術與創作',
+    '刺繡': '藝術與創作',
+    '手作飾品': '藝術與創作',
+    '手作': '藝術與創作',
+    '首飾設計': '藝術與創作',
+    '皮革工藝': '藝術與創作',
+    '木工': '藝術與創作',
+    '雕刻': '藝術與創作',
+    
+    // 🎼 表演藝術類
+    '唱歌': '表演藝術',
+    '歌唱': '表演藝術',
+    '合唱': '表演藝術',
+    '音樂': '表演藝術',
+    '音樂創作': '表演藝術',
+    '作詞': '表演藝術',    '作曲': '表演藝術',
+    '編曲': '表演藝術',
+    '音樂編曲': '表演藝術',
+    '音樂製作': '表演藝術',
+    '樂器演奏': '表演藝術',
+    '鋼琴': '表演藝術',
+    '吉他': '表演藝術',
+    '小提琴': '表演藝術',
+    '大提琴': '表演藝術',
+    '薩克斯風': '表演藝術',
+    '長笛': '表演藝術',
+    '爵士鼓': '表演藝術',
+    '烏克麗麗': '表演藝術',
+    '電子琴': '表演藝術',
+    '管樂器': '表演藝術',
+    '弦樂器': '表演藝術',
+    '打擊樂器': '表演藝術',
+    '舞蹈': '表演藝術',
+    '跳舞': '表演藝術',
+    '街舞': '表演藝術',
+    '芭蕾': '表演藝術',
+    '民族舞': '表演藝術',
+    '現代舞': '表演藝術',
+    '爵士舞': '表演藝術',
+    '拉丁舞': '表演藝術',
+    'K-pop舞蹈': '表演藝術',
+    '國標舞': '表演藝術',
+    '戲劇': '表演藝術',
+    '表演': '表演藝術',
+    '話劇': '表演藝術',
+    '音樂劇': '表演藝術',
+    '舞台劇': '表演藝術',
+    '魔術': '表演藝術',
+    '雜技': '表演藝術',
+    
+    // 📚 知識學習類
+    '閱讀': '知識學習',
+    '讀書': '知識學習',
+    '小說': '知識學習',
+    '文學': '知識學習',
+    '詩詞': '知識學習',
+    '散文': '知識學習',
+    '歷史': '知識學習',
+    '歷史研究': '知識學習',
+    '古代史': '知識學習',
+    '近代史': '知識學習',
+    '世界史': '知識學習',
+    '中國史': '知識學習',
+    '哲學': '知識學習',
+    '心理學研究': '知識學習',
+    '社會學': '知識學習',
+    '人類學': '知識學習',
+    '語言學習': '知識學習',
+    '英文': '知識學習',
+    '英語': '知識學習',
+    '日文': '知識學習',
+    '日語': '知識學習',
+    '韓文': '知識學習',
+    '韓語': '知識學習',
+    '西班牙文': '知識學習',
+    '法文': '知識學習',
+    '德文': '知識學習',
+    '中文': '知識學習',
+    '多國語言': '知識學習',
+    '寫作': '知識學習',
+    '創作': '知識學習',
+    '小說創作': '知識學習',
+    '詩': '知識學習',
+    '部落格': '知識學習',
+    'blog': '知識學習',
+    '日記': '知識學習',
+    '劇本創作': '知識學習',
+    '解謎': '知識學習',
+    '邏輯遊戲': '知識學習',
+    '益智遊戲': '知識學習',
+    '數獨': '知識學習',
+    '象棋': '知識學習',
+    '圍棋': '知識學習',
+    '西洋棋': '知識學習',
+    '推理': '知識學習',
+    '謎題': '知識學習',
+    '科學研究': '知識學習',
+    '學術研究': '知識學習',
+    '天文學': '知識學習',
+    '生物學': '知識學習',
+    '化學': '知識學習',
+    '物理': '知識學習',
+    '地理': '知識學習',    
+    // 🧘‍♀️ 身心健康類
+    '瑜珈': '身心健康',
+    '瑜伽': '身心健康',
+    'yoga': '身心健康',
+    '冥想': '身心健康',
+    '靜坐': '身心健康',
+    '正念': '身心健康',
+    '禪修': '身心健康',
+    '營養': '身心健康',
+    '飲食管理': '身心健康',
+    '健康飲食': '身心健康',
+    '素食': '身心健康',
+    '料理': '身心健康',
+    '烹飪': '身心健康',
+    '園藝': '身心健康',
+    '種植': '身心健康',
+    '植物照顧': '身心健康',
+    '多肉植物': '身心健康',
+    '花藝': '身心健康',
+    '插花': '身心健康',
+    '戶外散步': '身心健康',
+    '散步': '身心健康',
+    '自然療癒': '身心健康',
+    '森林浴': '身心健康',
+    '芳療': '身心健康',
+    '按摩': '身心健康',
+    '放鬆': '身心健康',
+    '壓力管理': '身心健康',
+    
+    // ⚽ 運動類
+    '運動': '運動競技',
+    '健身': '運動競技',
+    '重訓': '運動競技',
+    '重量訓練': '運動競技',
+    '肌力訓練': '運動競技',
+    '有氧運動': '運動競技',
+    '球類運動': '運動競技',
+    '籃球': '運動競技',
+    '足球': '運動競技',
+    '網球': '運動競技',
+    '桌球': '運動競技',
+    '乒乓球': '運動競技',
+    '羽毛球': '運動競技',
+    '排球': '運動競技',
+    '棒球': '運動競技',
+    '高爾夫': '運動競技',
+    '水上運動': '運動競技',
+    '游泳': '運動競技',
+    '衝浪': '運動競技',
+    '潛水': '運動競技',
+    '滑水': '運動競技',
+    '溯溪': '運動競技',
+    '登山': '運動競技',
+    '爬山': '運動競技',
+    '健行': '運動競技',
+    '徒步': '運動競技',
+    '攀岩': '運動競技',
+    '自行車': '運動競技',
+    '單車': '運動競技',
+    '腳踏車': '運動競技',
+    '公路車': '運動競技',
+    '登山車': '運動競技',
+    '武術': '運動競技',
+    '自衛術': '運動競技',
+    '跆拳道': '運動競技',
+    '空手道': '運動競技',
+    '柔道': '運動競技',
+    '拳擊': '運動競技',
+    '太極': '運動競技',
+    '詠春': '運動競技',
+    '跑步': '運動競技',
+    '慢跑': '運動競技',
+    '馬拉松': '運動競技',
+    '路跑': '運動競技',
+    '瑜珈健身': '運動競技',
+    '皮拉提斯': '運動競技',
+    '極限運動': '運動競技',
+    '滑板': '運動競技',
+    '直排輪': '運動競技',    
+    // 🎮 娛樂與休閒類
+    '打電動': '娛樂休閒',
+    '電競': '娛樂休閒',
+    '遊戲': '娛樂休閒',
+    'PC遊戲': '娛樂休閒',
+    'Switch': '娛樂休閒',
+    '手遊': '娛樂休閒',
+    '手機遊戲': '娛樂休閒',
+    '主機遊戲': '娛樂休閒',
+    'PS5': '娛樂休閒',
+    'Xbox': '娛樂休閒',
+    '線上遊戲': '娛樂休閒',
+    '單機遊戲': '娛樂休閒',
+    '桌遊': '娛樂休閒',
+    '卡牌遊戲': '娛樂休閒',
+    '桌上遊戲': '娛樂休閒',
+    '大富翁': '娛樂休閒',
+    '狼人殺': '娛樂休閒',
+    '劇本殺': '娛樂休閒',
+    '看電影': '娛樂休閒',
+    '追劇': '娛樂休閒',
+    '電影': '娛樂休閒',
+    '影集': '娛樂休閒',
+    '動畫': '娛樂休閒',
+    '動漫': '娛樂休閒',
+    '日劇': '娛樂休閒',
+    '韓劇': '娛樂休閒',
+    '美劇': '娛樂休閒',
+    '紀錄片': '娛樂休閒',
+    '模型': '娛樂休閒',
+    '公仔收集': '娛樂休閒',
+    '手辦': '娛樂休閒',
+    '鋼彈': '娛樂休閒',
+    '鋼彈模型': '娛樂休閒',
+    '動漫周邊': '娛樂休閒',
+    'ACG': '娛樂休閒',
+    '模型製作': '娛樂休閒',
+    '拼圖': '娛樂休閒',
+    '樂高': '娛樂休閒',
+    'LEGO': '娛樂休閒',
+    '旅行': '娛樂休閒',
+    '旅遊': '娛樂休閒',
+    '背包客': '娛樂休閒',
+    '自助旅行': '娛樂休閒',
+    '國內旅遊': '娛樂休閒',
+    '國外旅遊': '娛樂休閒',
+    '露營': '娛樂休閒',
+    '野餐': '娛樂休閒',
+    '觀光': '娛樂休閒',
+    '美食': '娛樂休閒',
+    '咖啡': '娛樂休閒',
+    '品酒': '娛樂休閒',
+    '茶道': '娛樂休閒',
+    
+    // 其他技能對應
     '程式設計': '資訊工程',
     '編程': '資訊工程',
-    '運動': '體能健康',
-    '健身': '體能健康',
-    '游泳': '體能健康',
-    '跑步': '體能健康',
-    '學語言': '語言能力',
-    '英文': '語言能力',
-    '日文': '語言能力',
-    '料理': '興趣技能',
-    '園藝': '興趣技能',
-    '手作': '興趣技能',
-    '遊戲': '興趣技能',
-    '旅行': '軟技能'
+    '程式': '資訊工程',
+    'coding': '資訊工程'
   }
   
   const skillTreeKey = interestMap[interest] || '興趣技能'
@@ -338,15 +612,20 @@ export function getSkillTreeByInterest(interest: string): SkillTree | null {
 
 // 輔助函數：根據學系和興趣推薦技能樹
 export function recommendSkillTrees(major?: string, interests?: string[]): SkillTree[] {
+  console.log('🚀 recommendSkillTrees 被呼叫，參數:', { major, interests })
+  
   const recommendedTrees: SkillTree[] = []
   const addedTreeNames = new Set<string>()
   
   // 根據學系推薦
   if (major) {
+    console.log('📚 處理學系推薦，學系:', major)
     const majorTree = getSkillTreeByMajor(major)
+    console.log('📚 學系對應結果:', majorTree?.name || '無對應技能樹')
     if (majorTree && !addedTreeNames.has(majorTree.name)) {
       recommendedTrees.push(majorTree)
       addedTreeNames.add(majorTree.name)
+      console.log('✅ 學系技能樹已添加:', majorTree.name)
     }
   }
   
@@ -359,11 +638,10 @@ export function recommendSkillTrees(major?: string, interests?: string[]): Skill
         addedTreeNames.add(interestTree.name)
       }
     })
-  }
-  
-  // 如果沒有推薦到任何技能樹，提供預設推薦
+  }    // 如果沒有推薦到任何技能樹，提供預設推薦
   if (recommendedTrees.length === 0) {
-    const defaultTrees = ['資訊工程', '軟技能', '語言能力']
+    console.log('⚠️ 沒有找到任何推薦技能樹，使用預設推薦')
+    const defaultTrees = ['資訊工程', '軟技能', '語言能力', '身心健康']
     defaultTrees.forEach(treeName => {
       const tree = skillTreesCollection[treeName]
       if (tree && !addedTreeNames.has(tree.name)) {
@@ -371,13 +649,15 @@ export function recommendSkillTrees(major?: string, interests?: string[]): Skill
         addedTreeNames.add(tree.name)
       }
     })
+  } else {
+    console.log('✅ 找到推薦技能樹:', recommendedTrees.map(t => t.name))
   }
   
   // 總是包含軟技能和語言能力（如果還沒包含的話）
   const essentialTrees = ['軟技能', '語言能力']
   essentialTrees.forEach(treeName => {
     const tree = skillTreesCollection[treeName]
-    if (tree && !addedTreeNames.has(tree.name)) {
+    if (tree && !addedTreeNames.has(tree.name) && recommendedTrees.length < 6) {
       recommendedTrees.push(tree)
       addedTreeNames.add(tree.name)
     }
@@ -434,12 +714,19 @@ export function getSkillTreesByCategory(): Record<string, SkillTree[]> {
     ].filter(Boolean),
     '管理學群': [
       skillTreesCollection['企業管理']
-    ].filter(Boolean),
-    '通用技能': [
+    ].filter(Boolean),    '通用技能': [
       skillTreesCollection['興趣技能'],
       skillTreesCollection['體能健康'],
       skillTreesCollection['語言能力'],
       skillTreesCollection['軟技能']
+    ].filter(Boolean),
+    '專門興趣': [
+      skillTreesCollection['藝術與創作'],
+      skillTreesCollection['表演藝術'],
+      skillTreesCollection['知識學習'],
+      skillTreesCollection['身心健康'],
+      skillTreesCollection['運動競技'],
+      skillTreesCollection['娛樂休閒']
     ].filter(Boolean)
   }
 }
