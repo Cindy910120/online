@@ -323,6 +323,52 @@
   box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.5), 0 0 15px rgba(6, 182, 212, 0.3);
 }
 
+/* Select 下拉選項樣式 */
+.tech-input select {
+  background: #1f2937;
+  color: white;
+}
+
+.tech-input option {
+  background: #1f2937;
+  color: white;
+  padding: 0.5rem;
+}
+
+.tech-input optgroup {
+  background: #374151;
+  color: #d1d5db;
+  font-weight: bold;
+  padding: 0.5rem;
+}
+
+.tech-input optgroup option {
+  background: #1f2937;
+  color: white;
+  padding-left: 1rem;
+  font-weight: normal;
+}
+
+/* 確保所有表單元素文字可見 */
+.tech-input,
+.tech-input:focus,
+.tech-input option,
+.tech-input optgroup {
+  color: white !important;
+}
+
+/* 為瀏覽器兼容性增加額外樣式 */
+select.tech-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%2306b6d4' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 0.65rem auto;
+  padding-right: 2.5rem;
+}
+
 .tech-bg {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
   position: relative;
@@ -512,4 +558,112 @@
   flex-wrap: wrap !important;
   gap: 8px !important;
   align-items: flex-start !important;
+}
+
+/* 強化深色主題下的文字可見性 */
+.tech-frame {
+  position: relative;
+  background: rgba(17, 24, 39, 0.9);
+  border: 2px solid #06b6d4;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 
+    0 0 30px rgba(6, 182, 212, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 確保所有表單元素在深色背景下文字清晰 */
+.tech-frame label,
+.tech-frame .tech-input,
+.tech-frame select,
+.tech-frame option,
+.tech-frame optgroup {
+  color: white !important;
+}
+
+/* 專門針對 select 元素的樣式強化 */
+select.tech-input {
+  color: white !important;
+  background: #1f2937 !important;
+}
+
+select.tech-input option {
+  background: #1f2937 !important;
+  color: white !important;
+}
+
+select.tech-input optgroup {
+  background: #374151 !important;
+  color: #d1d5db !important;
+  font-weight: bold !important;
+}
+
+/* 強化表單標題文字 */
+.tech-frame h1,
+.tech-frame h2,
+.tech-frame h3 {
+  color: white !important;
+}
+
+/* 確保輸入框 placeholder 可見 */
+.tech-input::placeholder {
+  color: #9ca3af !important;
+  opacity: 0.7;
+}
+
+/* 最終確保所有文字可見的強制樣式 */
+body, 
+.tech-bg,
+.tech-frame,
+.tech-panel {
+  color: white !important;
+}
+
+/* 強制所有輸入元素樣式 */
+input[type="text"],
+input[type="email"], 
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  background: #1f2937 !important;
+  color: white !important;
+  border: 1px solid #4b5563 !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  border-color: #06b6d4 !important;
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.5) !important;
+}
+
+/* 強制 select 選項樣式 */
+option {
+  background: #1f2937 !important;
+  color: white !important;
+}
+
+optgroup {
+  background: #374151 !important;
+  color: #d1d5db !important;
+}
+
+/* 確保標籤文字可見 */
+label {
+  color: #d1d5db !important;
+}
+
+/* 強制提示文字可見 */
+.text-gray-500 {
+  color: #9ca3af !important;
+}
+
+.text-gray-400 {
+  color: #d1d5db !important;
 }

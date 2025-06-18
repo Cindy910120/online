@@ -11,15 +11,14 @@
                 <span>已認證</span>
               </div>
             </div>
-            <div class="flex space-x-4">
-              <button
-                @click="navigateTo('/')"
+            <div class="flex space-x-4">              <button
+                @click="navigateTo('/panel')"
                 class="tech-button-complex"
               >
                 <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                返回主頁
+                進入個人面板
               </button>
               <button
                 @click="handleSignOut"
@@ -139,14 +138,14 @@
             </div>
           </div>          <!-- 專長 -->
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">專長技能</label>
-            <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-300 mb-2">專長技能</label>            <div class="mb-3">
               <input
                 v-model="newSkill"
                 type="text"
                 @keyup.enter="addSkill"
+                @input="handleSkillInput"
                 class="tech-input"
-                placeholder="輸入專長後按 Enter 新增"
+                placeholder="輸入專長，可用 、/,， 分隔多個項目，按 Enter 新增"
               />
             </div>
             <div class="flex flex-wrap gap-2">
@@ -162,21 +161,20 @@
                 >
                   ×
                 </button>
-              </div>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">建議：程式設計、數據分析、平面設計、語言能力等</p>
+              </div>            </div>
+            <p class="text-xs text-gray-400 mt-2">建議：程式設計、數據分析、平面設計、語言能力等（可用 、/,， 分隔多個項目）</p>
           </div>
 
           <!-- 興趣 -->
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">興趣愛好</label>
-            <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-300 mb-2">興趣愛好</label>            <div class="mb-3">
               <input
                 v-model="newInterest"
                 type="text"
                 @keyup.enter="addInterest"
+                @input="handleInterestInput"
                 class="tech-input"
-                placeholder="輸入興趣後按 Enter 新增"
+                placeholder="輸入興趣，可用 、/,， 分隔多個項目，按 Enter 新增"
               />
             </div>
             <div class="flex flex-wrap gap-2">
@@ -193,7 +191,7 @@
                   ×
                 </button>
               </div>            </div>
-            <p class="text-xs text-gray-500 mt-2">建議：音樂、閱讀、運動、攝影、旅遊等</p>
+            <p class="text-xs text-gray-400 mt-2">建議：音樂、閱讀、運動、攝影、旅遊等（可用 、/,， 分隔多個項目）</p>
           </div>
 
           <!-- 提交按鈕 -->
@@ -299,9 +297,23 @@ const loadProfile = async () => {
 
 // 新增專長
 const addSkill = () => {
-  if (newSkill.value.trim() && !profile.value.skills.includes(newSkill.value.trim())) {
-    profile.value.skills.push(newSkill.value.trim())
+  if (newSkill.value.trim()) {
+    // 使用多種分隔符號分割字串
+    const separators = /[、\/,，]/
+    const skills = newSkill.value.split(separators)
+      .map(skill => skill.trim())
+      .filter(skill => skill && !profile.value.skills.includes(skill))
+    
+    profile.value.skills.push(...skills)
     newSkill.value = ''
+  }
+}
+
+// 處理專長輸入
+const handleSkillInput = () => {
+  const separators = /[、\/,，]/
+  if (separators.test(newSkill.value)) {
+    addSkill()
   }
 }
 
@@ -312,9 +324,23 @@ const removeSkill = (index) => {
 
 // 新增興趣
 const addInterest = () => {
-  if (newInterest.value.trim() && !profile.value.interests.includes(newInterest.value.trim())) {
-    profile.value.interests.push(newInterest.value.trim())
+  if (newInterest.value.trim()) {
+    // 使用多種分隔符號分割字串
+    const separators = /[、\/,，]/
+    const interests = newInterest.value.split(separators)
+      .map(interest => interest.trim())
+      .filter(interest => interest && !profile.value.interests.includes(interest))
+    
+    profile.value.interests.push(...interests)
     newInterest.value = ''
+  }
+}
+
+// 處理興趣輸入
+const handleInterestInput = () => {
+  const separators = /[、\/,，]/
+  if (separators.test(newInterest.value)) {
+    addInterest()
   }
 }
 
@@ -328,14 +354,22 @@ const handleSubmit = async () => {
   loading.value = true
   message.value = ''
   
+  console.log('=== 儲存個人資料 ===', profile.value)
+  
   const result = await saveUserProfile(profile.value)
   
   if (result.success) {
-    message.value = '資料已成功儲存！能力分數已更新。'
+    message.value = '資料已成功儲存！能力分數已更新。技能樹將根據您的資料自動推薦。'
     messageType.value = 'success'
+    
+    // 驗證 localStorage 是否儲存成功
+    const savedProfile = localStorage.getItem('userProfile')
+    console.log('✅ 個人資料已儲存到 localStorage:', savedProfile)
+    
   } else {
     message.value = '儲存失敗：' + result.error
     messageType.value = 'error'
+    console.error('❌ 儲存失敗:', result.error)
   }
   
   loading.value = false

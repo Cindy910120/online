@@ -14,11 +14,26 @@ const loading = ref(true)
 
 export const useAuth = () => {
   const isAuthenticated = computed(() => !!user.value)
-
   // 監聽認證狀態變化
-  onAuthStateChanged(auth, (firebaseUser) => {
+  onAuthStateChanged(auth, async (firebaseUser) => {
     user.value = firebaseUser
     loading.value = false
+    
+    // 如果用戶已登入，自動載入個人資料到 localStorage
+    if (firebaseUser && process.client) {
+      try {
+        const docRef = doc(db, 'users', firebaseUser.uid)
+        const docSnap = await getDoc(docRef)
+        
+        if (docSnap.exists()) {
+          const userData = docSnap.data()
+          localStorage.setItem('userProfile', JSON.stringify(userData))
+          console.log('✅ 用戶登入時自動載入個人資料到 localStorage:', userData)
+        }
+      } catch (error) {
+        console.error('❌ 登入時載入個人資料失敗:', error)
+      }
+    }
   })
 
   // 登入
@@ -50,8 +65,7 @@ export const useAuth = () => {
     } catch (error: any) {
       return { success: false, error: error.message }
     }
-  }
-  // 儲存使用者資料
+  }  // 儲存使用者資料
   const saveUserProfile = async (profileData: any) => {
     if (!user.value) return { success: false, error: 'No user logged in' }
     
@@ -65,21 +79,29 @@ export const useAuth = () => {
         profileData.skills || [],
         profileData.interests || []
       )
-      
-      await setDoc(doc(db, 'users', user.value.uid), {
+
+      const userProfileData = {
         ...profileData,
         abilities,
         email: user.value.email,
         uid: user.value.uid,
         createdAt: new Date(),
         updatedAt: new Date()
-      })
+      }
+      
+      // 儲存到 Firebase
+      await setDoc(doc(db, 'users', user.value.uid), userProfileData)
+      
+      // 同時儲存到 localStorage 供技能樹系統使用
+      if (process.client) {
+        localStorage.setItem('userProfile', JSON.stringify(profileData))
+      }
+      
       return { success: true }
     } catch (error: any) {
       return { success: false, error: error.message }
     }
   }
-
   // 獲取使用者資料
   const getUserProfile = async () => {
     if (!user.value) return null
@@ -89,7 +111,14 @@ export const useAuth = () => {
       const docSnap = await getDoc(docRef)
       
       if (docSnap.exists()) {
-        return docSnap.data()
+        const userData = docSnap.data()
+        
+        // 同步到 localStorage 供技能樹系統使用
+        if (process.client) {
+          localStorage.setItem('userProfile', JSON.stringify(userData))
+        }
+        
+        return userData
       } else {
         return null
       }

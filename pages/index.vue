@@ -82,10 +82,8 @@
             <div class="tech-corner tech-corner-tl"></div>
             <div class="tech-corner tech-corner-br"></div>
             <div class="tech-connector tech-connector-bottom"></div>
-          </div>
-
-          <!-- 技能樹 -->
-          <div @click="showComingSoon('技能樹')" class="tech-grid-card-v2 group relative">
+          </div>          <!-- 技能樹 -->
+          <div @click="navigateTo('/skills')" class="tech-grid-card-v2 group relative">
             <div class="tech-icon">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
@@ -94,9 +92,10 @@
             <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">技能樹</h3>
             <p class="text-gray-400 text-sm mb-4">查看和升級您的技能點數</p>
             
-            <div class="tech-status">
-              <span>開發中</span>
+            <div class="tech-progress">
+              <div class="tech-progress-bar" style="width: 60%"></div>
             </div>
+            <div class="text-xs text-cyan-400 mt-2">技能進度: 60%</div>
             
             <div class="tech-corner tech-corner-tr"></div>
             <div class="tech-corner tech-corner-bl"></div>
@@ -104,7 +103,7 @@
           </div>
 
           <!-- 任務 -->
-          <div @click="showComingSoon('任務系統')" class="tech-grid-card-v2 group relative">
+          <div @click="navigateTo('/tasks')" class="tech-grid-card-v2 group relative">
             <div class="tech-icon">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
@@ -147,8 +146,7 @@
 
       <!-- 系統狀態 -->
       <div class="tech-frame mt-12">
-        <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+        <div class="p-6">          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
             <div class="relative">
               <div class="text-3xl font-bold text-cyan-400 mb-2">
                 <span class="tech-status">ACTIVE</span>
@@ -169,7 +167,7 @@
               <div class="text-3xl font-bold text-yellow-400 mb-2">{{ currentTime }}</div>
               <div class="text-gray-400 mb-3">系統時間</div>
               <div class="tech-progress">
-                <div class="tech-progress-bar" style="width: 60%"></div>
+                <div class="tech-progress-bar" style="width: 100%"></div>
               </div>
             </div>
           </div>
