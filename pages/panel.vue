@@ -249,7 +249,13 @@ const completedSkills = ref([])
 const completedTasks = ref([])
 const activeTasks = ref([])
 const customTasks = ref([])
-const recentActivities = ref([])
+interface Activity {
+  id: string | number
+  type: 'skill' | 'task' | string
+  description: string
+  timestamp: string | number | Date
+}
+const recentActivities = ref<Activity[]>([])
 
 // 計算當前等級 - 使用累積經驗公式 (Lv.n 需要 n*10 經驗)
 const currentLevel = computed(() => {
@@ -405,7 +411,7 @@ const saveProgressToFirebase = async () => {
 }
 
 // 格式化日期
-const formatDate = (date) => {
+const formatDate = (date: string | number | Date) => {
   return new Date(date).toLocaleString('zh-TW', {
     month: 'numeric',
     day: 'numeric',
@@ -415,7 +421,7 @@ const formatDate = (date) => {
 }
 
 // 顯示訊息
-const showMessage = (message) => {
+const showMessage = (message: string) => {
   notificationMessage.value = message
   showNotification.value = true
 }

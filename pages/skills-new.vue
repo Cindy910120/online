@@ -37,7 +37,7 @@
             <label class="block text-white text-lg font-semibold mb-3">主修學系</label>
             <select v-model="selectedMajor" class="tech-input w-full md:w-1/2">
               <option value="">請選擇學系...</option>
-              <optgroup v-for="(group, groupName) in academicGroups" :key="groupName" :label="groupName">
+              <optgroup v-for="(group, groupName) in academicGroups" :key="groupName" :label="group.name">
                 <option 
                   v-for="subcategory in group.subcategories" 
                   :key="subcategory.id" 
@@ -457,21 +457,22 @@ const applySelection = () => {
   saveUserProgressData()
 }
 
-const isSkillAvailable = (skillId: string, level: any, tree: SkillTree) => {
+const isSkillAvailable = (skillId: string, level: any, tree: SkillTreeType) => {
   // 檢查等級需求
   if (currentLevel.value < level.requiredLevel) {
     return false
   }
   
   // 檢查前置技能
-  const skill = level.skills.find(s => s.id === skillId)
+  const skill = level.skills.find((s: any) => s.id === skillId)
   if (!skill || !skill.requiredSkills) return true
   
   const userSkillTree = userProgress.value.skillTrees[tree.name] || {}
-  return skill.requiredSkills.every(reqId => userSkillTree[reqId]?.completed)
+  return skill.requiredSkills.every((reqId: string) => userSkillTree[reqId]?.completed)
 }
 
-const handleSkillToggle = async (skillId: string) => {
+const handleSkillToggle = async (skill: any) => {
+  const skillId = skill.id
   const treeName = selectedSkillTree.value
   if (!userProgress.value.skillTrees[treeName]) {
     userProgress.value.skillTrees[treeName] = {}
@@ -484,7 +485,7 @@ const handleSkillToggle = async (skillId: string) => {
   const tree = skillTreesCollection[treeName]
   let skillData = null
   for (const level of tree.levels) {
-    skillData = level.skills.find(s => s.id === skillId)
+    skillData = level.skills.find((s: any) => s.id === skillId)
     if (skillData) break
   }
   

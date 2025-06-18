@@ -135,7 +135,7 @@
                       <label class="block text-white text-sm font-medium mb-2">自訂時間 (分鐘)</label>
                       <input 
                         :value="task.customTime || task.suggestedTime"
-                        @input="updateTaskTime(task.id, $event.target.value)"
+                        @input="updateTaskTime(task.id, ($event.target as HTMLInputElement).value)"
                         type="number" 
                         min="5" 
                         max="600"

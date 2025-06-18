@@ -246,7 +246,9 @@ const { saveUserProgress, getUserProgress } = useFirebase()
 
 // 狀態管理
 const loading = ref(true)
-const selectedCategory = ref('major')
+type SkillCategoryKey = 'major' | 'interest' | 'fitness' | 'language' | 'soft'
+
+const selectedCategory = ref<SkillCategoryKey>('major')
 const selectedSkill = ref<any>(null)
 
 // 用戶數據
@@ -256,7 +258,11 @@ const userProgress = ref<any>({
 })
 
 // 技能分類
-const skillCategories = ref({
+const skillCategories = ref<Record<SkillCategoryKey, {
+  name: string
+  icon: string
+  skills: string[]
+}>>({
   major: {
     name: '專業技能',
     icon: '🎓',

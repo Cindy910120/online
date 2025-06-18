@@ -81,7 +81,7 @@
             <label class="block text-white text-lg font-semibold mb-3">主修學系</label>
             <select v-model="selectedMajor" class="bg-gray-800 border border-gray-600 text-white px-4 py-2 rounded focus:border-cyan-400 focus:outline-none w-full md:w-1/2">
               <option value="">請選擇學系...</option>
-              <optgroup v-for="(group, groupName) in academicGroups" :key="groupName" :label="groupName">
+              <optgroup v-for="(group, groupName) in academicGroups" :key="groupName" :label="String(groupName)">
                 <option 
                   v-for="subcategory in group.subcategories" 
                   :key="subcategory.id" 
