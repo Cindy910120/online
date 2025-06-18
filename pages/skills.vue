@@ -595,16 +595,15 @@ const handleSkillToggle = async (skill: any) => {
       exp: skill.exp, // 儲存技能的經驗值
       completedAt: newStatus ? Date.now() : null
     }
-    
-    // 記錄活動
+      // 記錄活動
     if (newStatus) {
       const activity = {
         id: Date.now().toString(),
-        type: 'skill_completed',
-        description: `完成技能：${skill.name} (+${skill.exp} 經驗)`,
+        type: 'skill', // 統一使用 skill 類型
+        description: `完成技能：${skill.name}，獲得 ${skill.exp} 經驗值`,
         timestamp: Date.now(),
         skillTree: selectedSkillTree.value,
-        skillId: skill.id,
+        skillName: skill.name,
         expGained: skill.exp
       }
       
@@ -614,11 +613,10 @@ const handleSkillToggle = async (skill: any) => {
       userProgress.value.activities.unshift(activity)
       
       console.log(`完成技能：${skill.name}，獲得 ${skill.exp} 經驗`)
-    } else {
-      // 移除完成記錄時，也移除相關活動
+    } else {      // 移除完成記錄時，也移除相關活動
       if (userProgress.value.activities) {
         userProgress.value.activities = userProgress.value.activities.filter(
-          (activity: any) => !(activity.skillId === skill.id && activity.skillTree === selectedSkillTree.value)
+          (activity: any) => !(activity.skillName === skill.name && activity.skillTree === selectedSkillTree.value)
         )
       }
       console.log(`取消技能：${skill.name}`)
@@ -747,7 +745,12 @@ const saveProgressData = async () => {
       level: currentLevel.value,
       exp: userProgress.value.exp,
       skillTrees: userProgress.value.skillTrees,
-      activities: userProgress.value.activities,
+      recentActivities: userProgress.value.activities || [], // 統一字段名稱
+      activities: userProgress.value.activities || [], // 保持兼容性
+      selectedMajor: userProfile.value?.major || '',
+      selectedInterests: userProfile.value?.interests || [],
+      activeTasks: userProgress.value.activeTasks || [],
+      completedTasks: userProgress.value.completedTasks || [],
       lastUpdated: Date.now()
     }
     
@@ -755,8 +758,9 @@ const saveProgressData = async () => {
     
     // 同步到 localStorage
     localStorage.setItem('userProgress', JSON.stringify(progressData))
+    console.log('✅ 進度已保存到 Firebase 和 localStorage')
   } catch (error) {
-    console.error('保存進度失敗:', error)
+    console.error('❌ 保存進度失敗:', error)
   }
 }
 

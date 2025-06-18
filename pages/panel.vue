@@ -9,17 +9,41 @@
     </div>
 
     <!-- 主要內容 -->
-    <div v-else-if="isAuthenticated" class="container mx-auto px-4 py-8">
-      <!-- 返回按鈕 -->
-      <button 
-        @click="goToHome"
-        class="tech-button-complex mb-6"
-      >
-        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-        </svg>
-        回到選單
-      </button>
+    <div v-else-if="isAuthenticated" class="container mx-auto px-4 py-8">      <!-- 返回按鈕 -->
+      <div class="flex justify-between items-center mb-6">
+        <button 
+          @click="goToHome"
+          class="tech-button-complex"
+        >
+          <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          回到選單
+        </button>        <!-- Firebase 測試按鈕 -->
+        <div class="flex space-x-3">
+          <button 
+            @click="refreshActivities"
+            class="tech-button text-sm px-4 py-2"
+            :disabled="loading"
+          >
+            刷新活動
+          </button>
+          <button 
+            @click="testFirebaseConnection"
+            class="tech-button text-sm px-4 py-2"
+            :disabled="loading"
+          >
+            測試 Firebase
+          </button>
+          <button 
+            @click="forceReinitializeData"
+            class="tech-button text-sm px-4 py-2"
+            :disabled="loading"
+          >
+            重置數據
+          </button>
+        </div>
+      </div>
 
       <!-- 等級系統標題區域 -->
       <div class="tech-frame mb-8">
@@ -88,6 +112,68 @@
           
           <div class="tech-corner tech-corner-bl"></div>
           <div class="tech-corner tech-corner-br"></div>
+        </div>      </div>
+
+      <!-- 技能樹進度展示 -->
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+          <svg class="w-6 h-6 mr-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+          </svg>
+          技能樹發展狀況
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="skillTree in skillTreeProgresses" :key="skillTree.name" class="tech-frame">
+            <div class="p-6">
+              <div class="flex items-center mb-4">
+                <div class="tech-icon-small mr-3">
+                  <span class="text-2xl">{{ skillTree.icon }}</span>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-white">{{ skillTree.name }}</h3>
+                  <p class="text-sm text-cyan-400">Lv.{{ skillTree.level }}</p>
+                </div>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-400 text-sm">經驗值</span>
+                  <span class="text-green-400 font-medium">{{ skillTree.exp }}/{{ skillTree.nextLevelExp }}</span>
+                </div>
+                
+                <div class="tech-progress">
+                  <div class="tech-progress-bar" :style="`width: ${skillTree.progress}%`"></div>
+                </div>
+                
+                <div class="text-xs text-cyan-400 text-center">
+                  {{ skillTree.progress }}% 至下一級
+                </div>
+              </div>
+            </div>
+            <div class="tech-corner tech-corner-tl"></div>
+            <div class="tech-corner tech-corner-tr"></div>
+            <div class="tech-corner tech-corner-bl"></div>
+            <div class="tech-corner tech-corner-br"></div>
+          </div>
+          
+          <!-- 如果沒有技能樹進度，顯示提示 -->
+          <div v-if="skillTreeProgresses.length === 0" class="col-span-full tech-frame">
+            <div class="p-8 text-center">
+              <svg class="w-16 h-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+              </svg>
+              <h3 class="text-xl font-bold text-gray-400 mb-2">尚未開始技能學習</h3>
+              <p class="text-gray-500 mb-4">前往技能樹頁面開始你的學習旅程</p>
+              <button @click="navigateTo('/skills')" class="tech-button-complex">
+                探索技能樹
+              </button>
+            </div>
+            <div class="tech-corner tech-corner-tl"></div>
+            <div class="tech-corner tech-corner-tr"></div>
+            <div class="tech-corner tech-corner-bl"></div>
+            <div class="tech-corner tech-corner-br"></div>
+          </div>
         </div>
       </div>
 
@@ -173,21 +259,31 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               近期活動
-            </h3>
-            <div class="space-y-3">
+            </h3>            <div class="space-y-3">
               <div v-if="recentActivities.length === 0" class="text-gray-500 text-sm text-center py-4">
-                暫無活動記錄
+                <p>暫無活動記錄</p>
+                <button @click="refreshActivities" class="text-cyan-400 hover:underline text-xs mt-2">
+                  點此刷新活動數據
+                </button>
               </div>
-              <div v-else v-for="activity in recentActivities.slice(0, 5)" :key="activity.id" class="activity-item">
-                <div class="flex items-start space-x-3">
-                  <div :class="[
-                    'w-2 h-2 rounded-full mt-2',
-                    activity.type === 'skill' ? 'bg-cyan-400' : 
-                    activity.type === 'task' ? 'bg-green-400' : 'bg-purple-400'
-                  ]"></div>
-                  <div class="flex-1">
-                    <p class="text-white text-sm">{{ activity.description }}</p>
-                    <p class="text-gray-400 text-xs">{{ formatDate(activity.timestamp) }}</p>
+              <div v-else>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs text-gray-400">最近活動 ({{ recentActivities.length }} 筆)</span>
+                  <button @click="refreshActivities" class="text-cyan-400 hover:underline text-xs">
+                    刷新
+                  </button>
+                </div>
+                <div v-for="activity in recentActivities.slice(0, 5)" :key="activity.id" class="activity-item">
+                  <div class="flex items-start space-x-3">
+                    <div :class="[
+                      'w-2 h-2 rounded-full mt-2',
+                      activity.type === 'skill' ? 'bg-cyan-400' : 
+                      activity.type === 'task' ? 'bg-green-400' : 'bg-purple-400'
+                    ]"></div>
+                    <div class="flex-1">
+                      <p class="text-white text-sm">{{ activity.description }}</p>
+                      <p class="text-gray-400 text-xs">{{ formatDate(activity.timestamp) }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -228,6 +324,13 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useFirebase } from '~/composables/useFirebase'
+import { 
+  skillTreesCollection, 
+  getSkillTreeProgress,
+  calculateSkillTreeLevel,
+  recommendSkillTrees,
+  getSkillTreeByInterest 
+} from '~/data/skill-trees/index'
 
 // 設定頁面中介軟體
 definePageMeta({
@@ -243,90 +346,203 @@ const userProfile = ref<any>(null)
 const showNotification = ref(false)
 const notificationMessage = ref('')
 
-// 等級系統相關（從Firebase同步） - 使用新的等級公式
-const userExpRef = ref(0)
-const completedSkills = ref([])
-const completedTasks = ref([])
-const activeTasks = ref([])
-const customTasks = ref([])
-interface Activity {
-  id: string | number
-  type: 'skill' | 'task' | string
-  description: string
-  timestamp: string | number | Date
-}
-const recentActivities = ref<Activity[]>([])
-
-// 計算當前等級 - 使用累積經驗公式 (Lv.n 需要 n*10 經驗)
-const currentLevel = computed(() => {
-  let level = 1
-  let totalExpNeeded = 0
-  
-  while (level <= 100) {
-    totalExpNeeded += level * 10
-    if (userExpRef.value < totalExpNeeded) {
-      break
-    }
-    level++
-  }
-  
-  return Math.min(100, level)
+// 技能樹進度相關 
+const userProgress = ref<any>({
+  level: 1,
+  exp: 0,
+  skillTrees: {},
+  activities: [],
+  selectedMajor: '',
+  selectedInterests: []
 })
 
-// 當前經驗值
-const currentExp = computed(() => userExpRef.value)
+interface Activity {
+  id: string | number
+  type: 'skill' | 'task' | 'level_up'
+  description: string
+  timestamp: string | number | Date
+  skillTree?: string
+  skillName?: string
+}
 
-// 計算到下一級所需的總經驗
-const nextLevelExp = computed(() => {
+const recentActivities = ref<Activity[]>([])
+
+// 計算推薦的技能樹
+const recommendedSkillTrees = computed(() => {
+  if (!userProfile.value) return []
+  
+  const major = userProfile.value.major || ''
+  const interests = userProfile.value.interests || []
+  
+  return recommendSkillTrees(major, interests)
+})
+
+// 計算各技能樹的等級和進度
+const skillTreeProgresses = computed(() => {
+  const progresses = []
+  
+  if (recommendedSkillTrees.value.length > 0) {
+    // 顯示推薦的技能樹
+    for (const tree of recommendedSkillTrees.value) {
+      const progress = getSkillTreeProgress(tree.name, userProgress.value.skillTrees)
+      progresses.push({
+        name: tree.name,
+        icon: tree.icon,
+        level: progress.currentLevel,
+        exp: progress.totalExp,
+        nextLevelExp: progress.nextLevelExp,
+        progress: progress.currentLevel > 0 ? Math.round((progress.totalExp / progress.nextLevelExp) * 100) : 0
+      })
+    }
+  } else {
+    // 如果沒有推薦技能樹，顯示一些預設的技能樹
+    const defaultTrees = ['電機工程', '繪畫藝術', '軟技能']
+    for (const treeName of defaultTrees) {
+      if (skillTreesCollection[treeName]) {
+        const tree = skillTreesCollection[treeName]
+        const progress = getSkillTreeProgress(treeName, userProgress.value.skillTrees)
+        progresses.push({
+          name: treeName,
+          icon: tree.icon,
+          level: progress.currentLevel,
+          exp: progress.totalExp,
+          nextLevelExp: progress.nextLevelExp,
+          progress: progress.currentLevel > 0 ? Math.round((progress.totalExp / progress.nextLevelExp) * 100) : 0
+        })
+      }
+    }
+  }
+  
+  return progresses.slice(0, 6) // 最多顯示6個技能樹
+})
+
+// 計算最高等級技能樹作為主要等級顯示
+const currentLevel = computed(() => {
+  let maxLevel = 1
+  for (const progress of skillTreeProgresses.value) {
+    if (progress.level > maxLevel) {
+      maxLevel = progress.level
+    }
+  }
+  return maxLevel
+})
+
+// 計算總經驗值
+const currentExp = computed(() => {
   let totalExp = 0
-  for (let i = 1; i <= currentLevel.value; i++) {
-    totalExp += i * 10
+  for (const progress of skillTreeProgresses.value) {
+    totalExp += progress.exp
   }
   return totalExp
 })
 
-// 等級進度百分比
-const levelProgress = computed(() => {
-  // 計算當前等級的進度
-  let currentLevelStartExp = 0
-  for (let i = 1; i < currentLevel.value; i++) {
-    currentLevelStartExp += i * 10
+// 計算下一級經驗值 (使用最高等級技能樹的下一級經驗)
+const nextLevelExp = computed(() => {
+  let maxNextLevelExp = currentLevel.value * 10
+  for (const progress of skillTreeProgresses.value) {
+    if (progress.level === currentLevel.value && progress.nextLevelExp > maxNextLevelExp) {
+      maxNextLevelExp = progress.nextLevelExp
+    }
   }
-  
-  const expInCurrentLevel = currentExp.value - currentLevelStartExp
-  const expNeededForLevel = currentLevel.value * 10
-  
-  return Math.min(100, (expInCurrentLevel / expNeededForLevel) * 100)
+  return maxNextLevelExp
 })
 
-// 總經驗值就是當前經驗值
+// 等級進度百分比 (基於最高等級技能樹)
+const levelProgress = computed(() => {
+  let maxProgress = 0
+  for (const progress of skillTreeProgresses.value) {
+    if (progress.level === currentLevel.value && progress.progress > maxProgress) {
+      maxProgress = progress.progress
+    }
+  }
+  return maxProgress
+})
+
+// 總經驗值就是所有技能樹經驗總和
 const totalExp = computed(() => currentExp.value)
 
-// 技能統計
-const completedSkillsCount = computed(() => completedSkills.value.length)
-const totalSkillsCount = computed(() => {
-  // 根據科系計算總技能數
-  const major = userProfile.value?.major || ''
-  if (major.includes('電機') || major.includes('資訊') || major.includes('機械')) {
-    return 9 // 每個科系3個等級 x 3個技能
+// 技能統計 - 計算已完成的技能總數
+const completedSkillsCount = computed(() => {
+  let totalCompleted = 0
+  for (const treeName in userProgress.value.skillTrees) {
+    const treeProgress = userProgress.value.skillTrees[treeName]
+    if (treeProgress && treeProgress.skills) {
+      totalCompleted += Object.keys(treeProgress.skills).length
+    }
   }
-  return 9 // 預設通用技能
+  return totalCompleted
+})
+
+const totalSkillsCount = computed(() => {
+  // 估算總技能數，基於推薦技能樹
+  return recommendedSkillTrees.value.length * 15 // 每個技能樹約15個技能
 })
 
 const skillProgress = computed(() => {
   if (totalSkillsCount.value === 0) return 0
-  return Math.round((completedSkillsCount.value / totalSkillsCount.value) * 100)
+  return Math.min(100, Math.round((completedSkillsCount.value / totalSkillsCount.value) * 100))
 })
 
-// 任務統計
-const activeTasksCount = computed(() => activeTasks.value.length)
-const completedTasksCount = computed(() => completedTasks.value.length)
+// 任務統計 - 從進度數據計算
+const activeTasksCount = computed(() => {
+  return userProgress.value.activeTasks?.length || 0
+})
+
+const completedTasksCount = computed(() => {
+  return userProgress.value.completedTasks?.length || 0
+})
 
 const taskProgress = computed(() => {
   const total = activeTasksCount.value + completedTasksCount.value
   if (total === 0) return 0
   return Math.round((completedTasksCount.value / total) * 100)
 })
+
+// 生成技能樹學習活動記錄
+const generateSkillTreeActivities = () => {
+  const activities: Activity[] = []
+  
+  // 為每個有進度的技能樹生成活動記錄
+  for (const [treeName, treeProgress] of Object.entries(userProgress.value.skillTrees)) {
+    if (treeProgress && typeof treeProgress === 'object' && 'skills' in treeProgress) {
+      const skills = (treeProgress as any).skills
+      if (skills && typeof skills === 'object') {
+        const skillCount = Object.keys(skills).length
+        if (skillCount > 0) {
+          // 技能學習記錄
+          activities.push({
+            id: `skill-${treeName}-${Date.now()}`,
+            type: 'skill',
+            description: `在「${treeName}」技能樹中學習了 ${skillCount} 個技能`,
+            timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // 隨機過去一週內
+            skillTree: treeName
+          })
+        }
+      }
+    }
+  }
+  
+  // 等級提升記錄
+  for (const progress of skillTreeProgresses.value) {
+    if (progress.level > 1) {
+      activities.push({
+        id: `level-${progress.name}-${progress.level}`,
+        type: 'level_up',
+        description: `「${progress.name}」技能樹升級到 Lv.${progress.level}！`,
+        timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
+        skillTree: progress.name
+      })
+    }
+  }
+  
+  // 按時間排序，取最新的
+  activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  
+  // 如果原本的活動記錄為空，使用生成的活動
+  if (recentActivities.value.length === 0) {
+    recentActivities.value = activities.slice(0, 10)
+  }
+}
 
 // 載入使用者資料
 const loadUserProfile = async () => {
@@ -340,6 +556,9 @@ const loadUserProfile = async () => {
     
     // 從Firebase載入進度
     await loadProgressFromFirebase()
+    
+    // 生成技能樹學習活動
+    generateSkillTreeActivities()
   } catch (error) {
     console.error('載入個人資料失敗:', error)
   } finally {
@@ -353,18 +572,128 @@ const loadProgressFromFirebase = async () => {
 
   try {
     const progress = await getUserProgress(user.value.uid)
+    console.log('從 Firebase 載入的進度數據:', progress)
+    
     if (progress) {
-      userExpRef.value = progress.exp || 0
-      completedSkills.value = progress.completedSkills || []
-      completedTasks.value = progress.completedTasks || []
-      activeTasks.value = progress.activeTasks || []
-      customTasks.value = progress.customTasks || []
-      recentActivities.value = progress.recentActivities || []
+      userProgress.value = {
+        level: progress.level || 1,
+        exp: progress.exp || 0,
+        skillTrees: progress.skillTrees || {},
+        activities: progress.activities || progress.recentActivities || [], // 兼容兩個字段
+        selectedMajor: progress.selectedMajor || '',
+        selectedInterests: progress.selectedInterests || [],
+        activeTasks: progress.activeTasks || [],
+        completedTasks: progress.completedTasks || []
+      }
+      // 統一使用 activities 數據
+      recentActivities.value = progress.activities || progress.recentActivities || []
+      console.log('載入的活動數據:', recentActivities.value)
+    } else {
+      // 如果沒有 Firebase 數據，初始化一些示範數據
+      await initializeDemoData()
     }
   } catch (error) {
     console.error('從Firebase載入進度失敗:', error)
     // 如果Firebase載入失敗，嘗試從localStorage載入
     loadProgressFromLocal()
+  }
+}
+
+// 初始化示範數據
+const initializeDemoData = async () => {
+  console.log('初始化示範技能樹數據...')
+  
+  // 基於用戶資料生成示範進度
+  const demoSkillTrees = {
+    '電機工程': {
+      skills: {
+        '基礎電路分析': { level: 3, exp: 150, completed: true },
+        '數位邏輯設計': { level: 2, exp: 80, completed: true },
+        '電磁學原理': { level: 1, exp: 30, completed: false }
+      },
+      totalExp: 260,
+      level: 3
+    },
+    '繪畫藝術': {
+      skills: {
+        '素描基礎': { level: 2, exp: 70, completed: true },
+        '色彩理論': { level: 1, exp: 25, completed: false }
+      },
+      totalExp: 95,
+      level: 2
+    },
+    '軟技能': {
+      skills: {
+        '溝通表達': { level: 2, exp: 60, completed: true },
+        '團隊合作': { level: 1, exp: 20, completed: false }
+      },
+      totalExp: 80,
+      level: 2
+    }
+  }
+
+  userProgress.value = {
+    level: 3,
+    exp: 435, // 總經驗值
+    skillTrees: demoSkillTrees,
+    activities: [],
+    selectedMajor: userProfile.value?.major || '電機工程',
+    selectedInterests: userProfile.value?.interests || ['程式設計', '電子電路'],
+    activeTasks: [
+      { id: 1, title: '完成電路設計實驗', status: 'active', exp: 50 },
+      { id: 2, title: '學習新的繪畫技巧', status: 'active', exp: 30 }
+    ],
+    completedTasks: [
+      { id: 3, title: '基礎電學理論學習', status: 'completed', exp: 40 },
+      { id: 4, title: '素描練習', status: 'completed', exp: 25 }
+    ]
+  }
+  // 生成示範活動記錄
+  const demoActivities: Activity[] = [
+    {
+      id: 'demo-1',
+      type: 'skill',
+      description: '完成技能：基礎電路分析，獲得 5 經驗值',
+      timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1小時前
+      skillTree: '電機工程'
+    },
+    {
+      id: 'demo-2',
+      type: 'level_up',
+      description: '電機工程技能樹升級到 Lv.3！',
+      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4小時前
+      skillTree: '電機工程'
+    },
+    {
+      id: 'demo-3',
+      type: 'skill',
+      description: '完成技能：素描基礎，獲得 4 經驗值',
+      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6小時前
+      skillTree: '繪畫藝術'
+    },
+    {
+      id: 'demo-4',
+      type: 'level_up',
+      description: '繪畫藝術技能樹升級到 Lv.2！',
+      timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8小時前
+      skillTree: '繪畫藝術'
+    },
+    {
+      id: 'demo-5',
+      type: 'task',
+      description: '完成任務：基礎電學理論學習，獲得 40 經驗值',
+      timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12小時前
+    }
+  ]
+
+  recentActivities.value = demoActivities
+
+  // 保存到 Firebase
+  try {
+    await saveProgressToFirebase()
+    console.log('✅ 示範數據已保存到 Firebase')
+  } catch (error) {
+    console.error('❌ 保存示範數據到 Firebase 失敗:', error)
   }
 }
 
@@ -375,11 +704,16 @@ const loadProgressFromLocal = () => {
   const savedData = localStorage.getItem(`user_progress_${user.value.uid}`)
   if (savedData) {
     const data = JSON.parse(savedData)
-    userExpRef.value = data.exp || 0
-    completedSkills.value = data.completedSkills || []
-    completedTasks.value = data.completedTasks || []
-    activeTasks.value = data.activeTasks || []
-    customTasks.value = data.customTasks || []
+    userProgress.value = {
+      level: data.level || 1,
+      exp: data.exp || 0,
+      skillTrees: data.skillTrees || {},
+      activities: data.recentActivities || [],
+      selectedMajor: data.selectedMajor || '',
+      selectedInterests: data.selectedInterests || [],
+      activeTasks: data.activeTasks || [],
+      completedTasks: data.completedTasks || []
+    }
     recentActivities.value = data.recentActivities || []
   }
 }
@@ -389,13 +723,15 @@ const saveProgressToFirebase = async () => {
   if (!user.value) return
 
   const progressData = {
-    currentExp: currentExp.value,
-    currentLevel: currentLevel.value,
-    completedSkills: completedSkills.value,
-    completedTasks: completedTasks.value,
-    activeTasks: activeTasks.value,
-    customTasks: customTasks.value,
-    recentActivities: recentActivities.value,
+    level: currentLevel.value,
+    exp: currentExp.value,
+    skillTrees: userProgress.value.skillTrees,
+    activities: recentActivities.value, // 統一使用 activities 字段
+    recentActivities: recentActivities.value, // 保持兼容性
+    activeTasks: userProgress.value.activeTasks || [],
+    completedTasks: userProgress.value.completedTasks || [],
+    selectedMajor: userProgress.value.selectedMajor,
+    selectedInterests: userProgress.value.selectedInterests,
     lastUpdated: new Date().toISOString()
   }
 
@@ -403,6 +739,7 @@ const saveProgressToFirebase = async () => {
     await saveUserProgress(user.value.uid, progressData)
     // 同時保存到localStorage作為備份
     localStorage.setItem(`user_progress_${user.value.uid}`, JSON.stringify(progressData))
+    console.log('✅ 進度已保存到 Firebase，包含活動數據:', recentActivities.value.length, '筆')
   } catch (error) {
     console.error('保存進度到Firebase失敗:', error)
     // 如果Firebase保存失敗，至少保存到localStorage
@@ -426,26 +763,98 @@ const showMessage = (message: string) => {
   showNotification.value = true
 }
 
+// 強制重新初始化數據（用於測試）
+const forceReinitializeData = async () => {
+  loading.value = true
+  try {
+    await initializeDemoData()
+    showMessage('數據已重新初始化並同步到 Firebase！')
+  } catch (error) {
+    console.error('重新初始化失敗:', error)
+    showMessage('重新初始化失敗，請檢查網路連接')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 測試 Firebase 連接
+const testFirebaseConnection = async () => {
+  if (!user.value) {
+    showMessage('請先登入')
+    return
+  }
+
+  loading.value = true
+  try {
+    // 測試保存數據
+    const testData = {
+      testTime: new Date().toISOString(),
+      message: 'Firebase 連接測試'
+    }
+    
+    await saveUserProgress(user.value.uid, testData)
+    
+    // 測試讀取數據
+    const retrieved = await getUserProgress(user.value.uid)
+    
+    if (retrieved && retrieved.testTime) {
+      showMessage('Firebase 連接正常！數據已成功保存和讀取')
+    } else {
+      showMessage('Firebase 讀取失敗')
+    }
+  } catch (error) {
+    console.error('Firebase 連接測試失敗:', error)
+    showMessage('Firebase 連接失敗，請檢查網路連接')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 刷新活動數據
+const refreshActivities = async () => {
+  if (!user.value) {
+    showMessage('請先登入')
+    return
+  }
+
+  loading.value = true
+  try {
+    console.log('開始刷新活動數據...')
+    
+    // 重新從 Firebase 載入數據
+    const progress = await getUserProgress(user.value.uid)
+    
+    if (progress) {
+      console.log('Firebase 中的完整數據:', progress)
+      
+      // 更新活動數據
+      const activities = progress.activities || progress.recentActivities || []
+      recentActivities.value = activities
+      
+      console.log('刷新後的活動數據:', activities)
+      showMessage(`活動數據已刷新！共載入 ${activities.length} 筆活動記錄`)
+    } else {
+      showMessage('Firebase 中沒有找到數據')
+    }
+  } catch (error) {
+    console.error('刷新活動數據失敗:', error)
+    showMessage('刷新活動數據失敗，請檢查網路連接')
+  } finally {
+    loading.value = false
+  }
+}
+
 // 導航到首頁
 const goToHome = () => {
   navigateTo('/')
 }
 
 // 監聽數據變化並自動保存
-watch([currentExp, currentLevel, completedSkills, completedTasks, activeTasks, customTasks, recentActivities], () => {
+watch([currentExp, currentLevel, userProgress, recentActivities], () => {
   if (user.value) {
     saveProgressToFirebase()
   }
 }, { deep: true })
-
-// 生命週期
-onMounted(() => {
-  if (isAuthenticated.value) {
-    loadUserProfile()
-  } else {
-    loading.value = false
-  }
-})
 
 // 監聽認證狀態變化
 watch([isAuthenticated, user], ([authenticated, currentUser]) => {
@@ -453,6 +862,25 @@ watch([isAuthenticated, user], ([authenticated, currentUser]) => {
     loadUserProfile()
   }
 }, { immediate: true })
+
+// 監聽頁面焦點，當用戶從其他頁面回到面板時刷新數據
+onMounted(() => {
+  if (isAuthenticated.value) {
+    loadUserProfile()
+  } else {
+    loading.value = false
+  }
+  
+  // 監聽頁面可見性變化
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && isAuthenticated.value) {
+        console.log('頁面重新可見，刷新活動數據...')
+        refreshActivities()
+      }
+    })
+  }
+})
 </script>
 
 <style scoped>
@@ -517,5 +945,22 @@ watch([isAuthenticated, user], ([authenticated, currentUser]) => {
 
 .activity-item:last-child {
   border-bottom: none;
+}
+
+.tech-icon-small {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 2px solid #334155;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.tech-icon-small:hover {
+  border-color: #00bcd4;
+  background: linear-gradient(135deg, #0f172a 0%, rgba(0, 188, 212, 0.1) 100%);
 }
 </style>
