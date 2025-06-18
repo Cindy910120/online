@@ -147,12 +147,13 @@
                 class="tech-input"
                 placeholder="輸入專長，可用 、/,， 分隔多個項目，按 Enter 新增"
               />
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <div
+            </div>            <div class="flex flex-wrap gap-2">
+              <div v-if="profile.skills.length === 0" class="text-gray-500 text-sm py-2">
+                尚未新增專長技能
+              </div>              <div
                 v-for="(skill, index) in profile.skills"
-                :key="index"
-                class="skill-tag group"
+                :key="`skill-${index}-${skill}`"
+                class="interest-tag group"
               >
                 {{ skill }}
                 <button
@@ -161,7 +162,7 @@
                 >
                   ×
                 </button>
-              </div>            </div>
+              </div></div>
             <p class="text-xs text-gray-400 mt-2">建議：程式設計、數據分析、平面設計、語言能力等（可用 、/,， 分隔多個項目）</p>
           </div>
 
@@ -176,11 +177,13 @@
                 class="tech-input"
                 placeholder="輸入興趣，可用 、/,， 分隔多個項目，按 Enter 新增"
               />
-            </div>
-            <div class="flex flex-wrap gap-2">
+            </div>            <div class="flex flex-wrap gap-2">
+              <div v-if="profile.interests.length === 0" class="text-gray-500 text-sm py-2">
+                尚未新增興趣愛好
+              </div>
               <div
                 v-for="(interest, index) in profile.interests"
-                :key="index"
+                :key="`interest-${index}-${interest}`"
                 class="interest-tag group"
               >
                 {{ interest }}
@@ -192,10 +195,15 @@
                 </button>
               </div>            </div>
             <p class="text-xs text-gray-400 mt-2">建議：音樂、閱讀、運動、攝影、旅遊等（可用 、/,， 分隔多個項目）</p>
-          </div>
-
-          <!-- 提交按鈕 -->
+          </div>          <!-- 提交按鈕 -->
           <div class="flex justify-end space-x-4 pt-6">
+            <button
+              type="button"
+              @click="debugProfile"
+              class="tech-button-complex border-yellow-500 text-yellow-400 hover:bg-yellow-500"
+            >
+              調試數據
+            </button>
             <button
               type="button"
               @click="loadProfile"
@@ -279,8 +287,28 @@ const messageClass = computed(() => ({
 
 // 載入使用者資料
 const loadProfile = async () => {
+  console.log('=== 載入個人資料 ===')
+  
   const userData = await getUserProfile()
+  console.log('從 Firebase 載入的資料:', userData)
+  
   if (userData) {
+    // 處理專長技能 - 支援多種格式
+    let skills = []
+    if (Array.isArray(userData.skills)) {
+      skills = userData.skills
+    } else if (typeof userData.skills === 'string') {
+      skills = userData.skills.split(',').map(s => s.trim()).filter(s => s)
+    }
+    
+    // 處理興趣愛好 - 支援多種格式
+    let interests = []
+    if (Array.isArray(userData.interests)) {
+      interests = userData.interests
+    } else if (typeof userData.interests === 'string') {
+      interests = userData.interests.split(',').map(s => s.trim()).filter(s => s)
+    }
+    
     profile.value = {
       name: userData.name || '',
       nickname: userData.nickname || '',
@@ -289,22 +317,35 @@ const loadProfile = async () => {
       birthday: userData.birthday || '',
       height: userData.height || null,
       weight: userData.weight || null,
-      skills: Array.isArray(userData.skills) ? userData.skills : (userData.skills ? userData.skills.split(',').map(s => s.trim()) : []),
-      interests: Array.isArray(userData.interests) ? userData.interests : (userData.interests ? userData.interests.split(',').map(s => s.trim()) : [])
+      skills: skills,
+      interests: interests
     }
+    
+    console.log('載入後的專長技能:', profile.value.skills)
+    console.log('載入後的興趣愛好:', profile.value.interests)
+  } else {
+    console.log('沒有找到用戶資料')
   }
 }
 
 // 新增專長
 const addSkill = () => {
   if (newSkill.value.trim()) {
+    console.log('新增專長輸入:', newSkill.value)
+    
     // 使用多種分隔符號分割字串
     const separators = /[、\/,，]/
     const skills = newSkill.value.split(separators)
       .map(skill => skill.trim())
       .filter(skill => skill && !profile.value.skills.includes(skill))
     
-    profile.value.skills.push(...skills)
+    console.log('分割後的專長:', skills)
+    
+    if (skills.length > 0) {
+      profile.value.skills.push(...skills)
+      console.log('更新後的專長列表:', profile.value.skills)
+    }
+    
     newSkill.value = ''
   }
 }
@@ -325,13 +366,21 @@ const removeSkill = (index) => {
 // 新增興趣
 const addInterest = () => {
   if (newInterest.value.trim()) {
+    console.log('新增興趣輸入:', newInterest.value)
+    
     // 使用多種分隔符號分割字串
     const separators = /[、\/,，]/
     const interests = newInterest.value.split(separators)
       .map(interest => interest.trim())
       .filter(interest => interest && !profile.value.interests.includes(interest))
     
-    profile.value.interests.push(...interests)
+    console.log('分割後的興趣:', interests)
+    
+    if (interests.length > 0) {
+      profile.value.interests.push(...interests)
+      console.log('更新後的興趣列表:', profile.value.interests)
+    }
+    
     newInterest.value = ''
   }
 }
@@ -354,7 +403,10 @@ const handleSubmit = async () => {
   loading.value = true
   message.value = ''
   
-  console.log('=== 儲存個人資料 ===', profile.value)
+  console.log('=== 儲存個人資料 ===')
+  console.log('完整資料:', profile.value)
+  console.log('專長技能:', profile.value.skills)
+  console.log('興趣愛好:', profile.value.interests)
   
   const result = await saveUserProfile(profile.value)
   
@@ -365,6 +417,12 @@ const handleSubmit = async () => {
     // 驗證 localStorage 是否儲存成功
     const savedProfile = localStorage.getItem('userProfile')
     console.log('✅ 個人資料已儲存到 localStorage:', savedProfile)
+    
+    if (savedProfile) {
+      const parsedProfile = JSON.parse(savedProfile)
+      console.log('✅ 儲存的專長技能:', parsedProfile.skills)
+      console.log('✅ 儲存的興趣愛好:', parsedProfile.interests)
+    }
     
   } else {
     message.value = '儲存失敗：' + result.error
@@ -383,6 +441,32 @@ const handleSubmit = async () => {
 // 登出
 const handleSignOut = async () => {
   await signOut()
+}
+
+// 調試函數
+const debugProfile = () => {
+  console.log('=== 調試個人資料數據 ===')
+  console.log('當前 profile.value:', profile.value)
+  console.log('專長技能數組 (長度:', profile.value.skills.length, '):', profile.value.skills)
+  console.log('興趣愛好數組 (長度:', profile.value.interests.length, '):', profile.value.interests)
+  
+  const localData = localStorage.getItem('userProfile')
+  console.log('localStorage 原始資料:', localData)
+  
+  if (localData) {
+    try {
+      const parsed = JSON.parse(localData)
+      console.log('localStorage 解析後:', parsed)
+      console.log('localStorage 專長技能:', parsed.skills)
+      console.log('localStorage 興趣愛好:', parsed.interests)
+    } catch (e) {
+      console.error('localStorage 解析失敗:', e)
+    }
+  }
+  
+  // 顯示在頁面上
+  message.value = `專長: ${profile.value.skills.length} 個 [${profile.value.skills.join(', ')}] | 興趣: ${profile.value.interests.length} 個 [${profile.value.interests.join(', ')}]`
+  messageType.value = 'success'
 }
 
 // 頁面載入時自動載入資料

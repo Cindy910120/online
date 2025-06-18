@@ -70,6 +70,11 @@ export const useAuth = () => {
     if (!user.value) return { success: false, error: 'No user logged in' }
     
     try {
+      console.log('=== saveUserProfile 開始 ===')
+      console.log('原始輸入資料:', profileData)
+      console.log('專長技能 (輸入):', profileData.skills)
+      console.log('興趣愛好 (輸入):', profileData.interests)
+      
       // 動態導入能力計算函數
       const { calculateUserAbilities } = await import('~/composables/useAbilities')
       
@@ -89,12 +94,18 @@ export const useAuth = () => {
         updatedAt: new Date()
       }
       
+      console.log('完整儲存資料:', userProfileData)
+      console.log('專長技能 (儲存):', userProfileData.skills)
+      console.log('興趣愛好 (儲存):', userProfileData.interests)
+      
       // 儲存到 Firebase
       await setDoc(doc(db, 'users', user.value.uid), userProfileData)
+      console.log('✅ Firebase 儲存成功')
       
       // 同時儲存到 localStorage 供技能樹系統使用
       if (process.client) {
-        localStorage.setItem('userProfile', JSON.stringify(profileData))
+        localStorage.setItem('userProfile', JSON.stringify(userProfileData))
+        console.log('✅ localStorage 儲存成功')
       }
       
       return { success: true }
@@ -105,25 +116,30 @@ export const useAuth = () => {
   // 獲取使用者資料
   const getUserProfile = async () => {
     if (!user.value) return null
-    
-    try {
+      try {
+      console.log('=== getUserProfile 開始 ===')
       const docRef = doc(db, 'users', user.value.uid)
       const docSnap = await getDoc(docRef)
       
       if (docSnap.exists()) {
         const userData = docSnap.data()
+        console.log('從 Firebase 載入的資料:', userData)
+        console.log('專長技能 (Firebase):', userData.skills)
+        console.log('興趣愛好 (Firebase):', userData.interests)
         
         // 同步到 localStorage 供技能樹系統使用
         if (process.client) {
           localStorage.setItem('userProfile', JSON.stringify(userData))
+          console.log('✅ 資料已同步到 localStorage')
         }
         
         return userData
       } else {
+        console.log('❌ Firebase 中沒有找到用戶資料')
         return null
       }
     } catch (error: any) {
-      console.error('Error getting user profile:', error)
+      console.error('❌ 載入用戶資料時發生錯誤:', error)
       return null
     }
   }
