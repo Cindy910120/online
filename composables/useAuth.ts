@@ -90,7 +90,6 @@ export const useAuth = () => {
         abilities,
         email: user.value.email,
         uid: user.value.uid,
-        createdAt: new Date(),
         updatedAt: new Date()
       }
       
@@ -98,9 +97,9 @@ export const useAuth = () => {
       console.log('專長技能 (儲存):', userProfileData.skills)
       console.log('興趣愛好 (儲存):', userProfileData.interests)
       
-      // 儲存到 Firebase
-      await setDoc(doc(db, 'users', user.value.uid), userProfileData)
-      console.log('✅ Firebase 儲存成功')
+      // 儲存到 Firebase (使用 merge 模式以保留其他欄位)
+      await setDoc(doc(db, 'users', user.value.uid), userProfileData, { merge: true })
+      console.log('✅ Firebase 儲存成功 (合併模式)')
       
       // 同時儲存到 localStorage 供技能樹系統使用
       if (process.client) {

@@ -139,15 +139,27 @@
           </div>          <!-- 專長 -->
           <div>
             <label class="block text-sm font-medium text-gray-300 mb-2">專長技能</label>            <div class="mb-3">
-              <input
-                v-model="newSkill"
-                type="text"
-                @keyup.enter="addSkill"
-                @input="handleSkillInput"
-                class="tech-input"
-                placeholder="輸入專長，可用 、/,， 分隔多個項目，按 Enter 新增"
-              />
-            </div>            <div class="flex flex-wrap gap-2">
+              <div class="flex gap-2">
+                <input
+                  v-model="newSkill"
+                  type="text"
+                  @keyup.enter="addSkill"
+                  @input="handleSkillInput"
+                  class="tech-input flex-1"
+                  placeholder="輸入專長，可用 、/,， 分隔多個項目"
+                />
+                <button
+                  @click="addSkillsOnly"
+                  :disabled="!newSkill.trim() || loading"
+                  class="tech-button-complex bg-green-500 border-green-500 text-white hover:bg-green-400 whitespace-nowrap"
+                >
+                  僅新增
+                </button>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">
+                ※ 按 Enter 或使用分隔符號可快速新增；點擊「僅新增」按鈕會保留現有技能並新增新技能
+              </p>
+            </div><div class="flex flex-wrap gap-2">
               <div v-if="profile.skills.length === 0" class="text-gray-500 text-sm py-2">
                 尚未新增專長技能
               </div>              <div
@@ -169,15 +181,27 @@
           <!-- 興趣 -->
           <div>
             <label class="block text-sm font-medium text-gray-300 mb-2">興趣愛好</label>            <div class="mb-3">
-              <input
-                v-model="newInterest"
-                type="text"
-                @keyup.enter="addInterest"
-                @input="handleInterestInput"
-                class="tech-input"
-                placeholder="輸入興趣，可用 、/,， 分隔多個項目，按 Enter 新增"
-              />
-            </div>            <div class="flex flex-wrap gap-2">
+              <div class="flex gap-2">
+                <input
+                  v-model="newInterest"
+                  type="text"
+                  @keyup.enter="addInterest"
+                  @input="handleInterestInput"
+                  class="tech-input flex-1"
+                  placeholder="輸入興趣，可用 、/,， 分隔多個項目"
+                />
+                <button
+                  @click="addInterestsOnly"
+                  :disabled="!newInterest.trim() || loading"
+                  class="tech-button-complex bg-green-500 border-green-500 text-white hover:bg-green-400 whitespace-nowrap"
+                >
+                  僅新增
+                </button>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">
+                ※ 按 Enter 或使用分隔符號可快速新增；點擊「僅新增」按鈕會保留現有興趣並新增新興趣
+              </p>
+            </div><div class="flex flex-wrap gap-2">
               <div v-if="profile.interests.length === 0" class="text-gray-500 text-sm py-2">
                 尚未新增興趣愛好
               </div>
@@ -396,6 +420,126 @@ const handleInterestInput = () => {
 // 移除興趣
 const removeInterest = (index) => {
   profile.value.interests.splice(index, 1)
+}
+
+// 僅新增技能（不覆蓋現有，直接從Firebase合併）
+const addSkillsOnly = async () => {
+  if (!newSkill.value.trim()) return
+  
+  console.log('=== 僅新增技能模式 ===')
+  
+  // 分割新輸入的技能
+  const separators = /[、\/,，]/
+  const newSkills = newSkill.value.split(separators)
+    .map(skill => skill.trim())
+    .filter(skill => skill)
+  
+  console.log('要新增的技能:', newSkills)
+  
+  if (newSkills.length === 0) return
+  
+  try {
+    loading.value = true
+    
+    // 從 Firebase 獲取最新的現有技能
+    const userData = await getUserProfile()
+    const existingSkills = userData?.skills || []
+    console.log('Firebase 中現有的技能:', existingSkills)
+    
+    // 合併並去重
+    const mergedSkills = [...new Set([...existingSkills, ...newSkills])]
+    console.log('合併後的技能列表:', mergedSkills)
+    
+    // 更新前端顯示
+    profile.value.skills = mergedSkills
+    
+    // 儲存到 Firebase
+    const result = await saveUserProfile({
+      ...profile.value,
+      skills: mergedSkills
+    })
+    
+    if (result.success) {
+      message.value = `成功新增技能：${newSkills.join('、')}`
+      messageType.value = 'success'
+      newSkill.value = ''
+    } else {
+      message.value = '新增技能失敗：' + result.error
+      messageType.value = 'error'
+    }
+    
+  } catch (error) {
+    console.error('新增技能失敗:', error)
+    message.value = '新增技能失敗：' + error.message
+    messageType.value = 'error'
+  } finally {
+    loading.value = false
+    
+    // 3秒後清除訊息
+    setTimeout(() => {
+      message.value = ''
+    }, 3000)
+  }
+}
+
+// 僅新增興趣（不覆蓋現有，直接從Firebase合併）
+const addInterestsOnly = async () => {
+  if (!newInterest.value.trim()) return
+  
+  console.log('=== 僅新增興趣模式 ===')
+  
+  // 分割新輸入的興趣
+  const separators = /[、\/,，]/
+  const newInterests = newInterest.value.split(separators)
+    .map(interest => interest.trim())
+    .filter(interest => interest)
+  
+  console.log('要新增的興趣:', newInterests)
+  
+  if (newInterests.length === 0) return
+  
+  try {
+    loading.value = true
+    
+    // 從 Firebase 獲取最新的現有興趣
+    const userData = await getUserProfile()
+    const existingInterests = userData?.interests || []
+    console.log('Firebase 中現有的興趣:', existingInterests)
+    
+    // 合併並去重
+    const mergedInterests = [...new Set([...existingInterests, ...newInterests])]
+    console.log('合併後的興趣列表:', mergedInterests)
+    
+    // 更新前端顯示
+    profile.value.interests = mergedInterests
+    
+    // 儲存到 Firebase
+    const result = await saveUserProfile({
+      ...profile.value,
+      interests: mergedInterests
+    })
+    
+    if (result.success) {
+      message.value = `成功新增興趣：${newInterests.join('、')}`
+      messageType.value = 'success'
+      newInterest.value = ''
+    } else {
+      message.value = '新增興趣失敗：' + result.error
+      messageType.value = 'error'
+    }
+    
+  } catch (error) {
+    console.error('新增興趣失敗:', error)
+    message.value = '新增興趣失敗：' + error.message
+    messageType.value = 'error'
+  } finally {
+    loading.value = false
+    
+    // 3秒後清除訊息
+    setTimeout(() => {
+      message.value = ''
+    }, 3000)
+  }
 }
 
 // 提交表單
