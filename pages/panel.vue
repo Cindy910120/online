@@ -19,14 +19,27 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
           回到選單
-        </button>        <!-- Firebase 測試按鈕 -->
-        <div class="flex space-x-3">
+        </button>        <!-- Firebase 測試按鈕 -->        <div class="flex space-x-3">
           <button 
             @click="refreshActivities"
             class="tech-button text-sm px-4 py-2"
             :disabled="loading"
           >
             刷新活動
+          </button>
+          <button 
+            @click="debugStats"
+            class="tech-button text-sm px-4 py-2"
+            :disabled="loading"
+          >
+            調試統計
+          </button>
+          <button 
+            @click="updateStats"
+            class="tech-button text-sm px-4 py-2"
+            :disabled="loading"
+          >
+            更新統計
           </button>
           <button 
             @click="testFirebaseConnection"
@@ -74,23 +87,32 @@
         <div class="tech-corner tech-corner-tr"></div>
         <div class="tech-corner tech-corner-bl"></div>
         <div class="tech-corner tech-corner-br"></div>
-      </div>
-
-      <!-- 快速導航 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      </div>      <!-- 快速導航 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div @click="navigateTo('/skills')" class="tech-grid-card-v2 group relative cursor-pointer">
           <div class="tech-icon">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
             </svg>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">技能樹系統</h3>
+          </div>          <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">技能樹系統</h3>
           <p class="text-gray-400 text-sm mb-4">學習專業技能，解鎖新能力</p>
           
           <div class="tech-progress">
             <div class="tech-progress-bar" :style="`width: ${skillProgress}%`"></div>
           </div>
-          <div class="text-xs text-cyan-400 mt-2">已完成: {{ completedSkillsCount }} / {{ totalSkillsCount }}</div>
+          <div class="text-xs text-cyan-400 mt-2">已完成: {{ completedSkillsCount }} / {{ totalSkillsCount }} ({{ skillProgress }}%)</div>
+          
+          <!-- 推薦技能樹快速預覽 -->
+          <div class="mt-3 flex flex-wrap gap-1">
+            <span 
+              v-for="tree in detailedSkillStats.progressByTree.slice(0, 3)" 
+              :key="tree.name"
+              class="px-2 py-1 text-xs bg-cyan-600/20 text-cyan-300 rounded"
+              :title="`${tree.name}: ${tree.completed}/${tree.total} 技能`"
+            >
+              {{ tree.name }}: {{ tree.percentage }}%
+            </span>
+          </div>
           
           <div class="tech-corner tech-corner-tl"></div>
           <div class="tech-corner tech-corner-tr"></div>
@@ -101,18 +123,65 @@
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
             </svg>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">任務系統</h3>
+          </div>          <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">任務系統</h3>
           <p class="text-gray-400 text-sm mb-4">接取任務，獲得經驗值</p>
           
           <div class="tech-progress">
             <div class="tech-progress-bar" :style="`width: ${taskProgress}%`"></div>
           </div>
-          <div class="text-xs text-cyan-400 mt-2">進行中: {{ activeTasksCount }} | 已完成: {{ completedTasksCount }}</div>
+          <div class="text-xs text-cyan-400 mt-2">
+            可接取: {{ availableTasksCount }} | 進行中: {{ activeTasksCount }} | 已完成: {{ completedTasksCount }}
+          </div>
+            <!-- 任務分類快速預覽 -->
+          <div class="mt-3 flex flex-wrap gap-1">
+            <template v-for="(count, category) in detailedTaskStats.categories" :key="category">
+              <span 
+                v-if="count > 0"
+                class="px-2 py-1 text-xs bg-blue-600/20 text-blue-300 rounded"
+              >
+                {{ category }}: {{ count }}
+              </span>
+            </template>
+          </div>
           
           <div class="tech-corner tech-corner-bl"></div>
           <div class="tech-corner tech-corner-br"></div>
-        </div>      </div>
+        </div>
+
+        <div @click="navigateTo('/achievements')" class="tech-grid-card-v2 group relative cursor-pointer">
+          <div class="tech-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">成就系統</h3>
+          <p class="text-gray-400 text-sm mb-4">解鎖成就，展示成果</p>
+          
+          <div class="tech-progress">
+            <div class="tech-progress-bar" :style="`width: ${achievementProgress}%`"></div>
+          </div>
+          <div class="text-xs text-cyan-400 mt-2">
+            已解鎖: {{ unlockedAchievementsCount }} / {{ totalAchievementsCount }} ({{ achievementProgress }}%)
+          </div>
+            <!-- 最近解鎖成就預覽 -->
+          <div class="mt-3 flex flex-wrap gap-1">
+            <span 
+              v-for="achievement in recentAchievements.slice(0, 3)" 
+              :key="achievement.id"
+              class="px-2 py-1 text-xs bg-yellow-600/20 text-yellow-300 rounded"
+              :title="achievement.description"
+            >
+              {{ achievement.unlocked ? achievement.icon : '❓' }} {{ achievement.unlocked ? achievement.name : '???' }}
+            </span>
+            <span v-if="recentAchievements.length === 0" class="px-2 py-1 text-xs bg-gray-600/20 text-gray-400 rounded">
+              暫無成就
+            </span>
+          </div>
+          
+          <div class="tech-corner tech-corner-tl"></div>
+          <div class="tech-corner tech-corner-tr"></div>
+        </div>
+      </div>
 
       <!-- 技能樹進度展示 -->
       <div class="mb-8">
@@ -187,8 +256,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
               </svg>
               學習統計
-            </h3>
-            <div class="space-y-4">
+            </h3>            <div class="space-y-4">
               <div class="flex justify-between items-center">
                 <span class="text-gray-400">當前等級</span>
                 <span class="text-cyan-400 font-bold text-lg">Lv.{{ currentLevel }}</span>
@@ -199,11 +267,47 @@
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-gray-400">已完成技能</span>
-                <span class="text-blue-400 font-bold">{{ completedSkillsCount }}</span>
+                <span class="text-blue-400 font-bold">{{ completedSkillsCount }} / {{ totalSkillsCount }}</span>
               </div>
-              <div class="flex justify-between items-center">
-                <span class="text-gray-400">完成任務數</span>
-                <span class="text-purple-400 font-bold">{{ completedTasksCount }}</span>
+              
+              <!-- 任務詳細統計 -->
+              <div class="border-t border-gray-600 pt-3 mt-3">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-gray-400 text-sm">任務進度</span>
+                  <span class="text-purple-400 font-bold">{{ taskProgress }}%</span>
+                </div>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">可接取</span>
+                    <span class="text-orange-400">{{ availableTasksCount }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">進行中</span>
+                    <span class="text-yellow-400">{{ activeTasksCount }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">已完成</span>
+                    <span class="text-green-400">{{ completedTasksCount }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 技能樹完成度 -->
+              <div class="border-t border-gray-600 pt-3 mt-3">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-gray-400 text-sm">技能樹完成度</span>
+                  <span class="text-cyan-400 font-bold">{{ skillProgress }}%</span>
+                </div>
+                <div class="space-y-1">
+                  <div 
+                    v-for="tree in detailedSkillStats.progressByTree.slice(0, 3)" 
+                    :key="tree.name"
+                    class="flex justify-between text-sm"
+                  >
+                    <span class="text-gray-500 truncate mr-2">{{ tree.name }}</span>
+                    <span class="text-cyan-300">{{ tree.percentage }}%</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -321,9 +425,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useFirebase } from '~/composables/useFirebase'
+import { useAchievements } from '~/composables/useAchievements'
 import { 
   skillTreesCollection, 
   getSkillTreeProgress,
@@ -339,6 +444,15 @@ definePageMeta({
 
 const { user, isAuthenticated, getUserProfile } = useAuth()
 const { saveUserProgress, getUserProgress } = useFirebase()
+const {
+  userAchievements,
+  totalAchievements,
+  unlockedCount,
+  completionPercentage,
+  recentUnlocked,
+  loadAchievements,
+  checkAchievements
+} = useAchievements()
 const loading = ref(true)
 const userProfile = ref<any>(null)
 
@@ -461,21 +575,38 @@ const levelProgress = computed(() => {
 // 總經驗值就是所有技能樹經驗總和
 const totalExp = computed(() => currentExp.value)
 
-// 技能統計 - 計算已完成的技能總數
-const completedSkillsCount = computed(() => {
-  let totalCompleted = 0
-  for (const treeName in userProgress.value.skillTrees) {
-    const treeProgress = userProgress.value.skillTrees[treeName]
-    if (treeProgress && treeProgress.skills) {
-      totalCompleted += Object.keys(treeProgress.skills).length
+// 技能統計 - 計算所有技能樹的精確統計
+const totalSkillsCount = computed(() => {
+  let total = 0
+  
+  // 計算推薦技能樹的總技能數
+  for (const tree of recommendedSkillTrees.value) {
+    if (tree && tree.levels) {
+      total += tree.levels.reduce((sum: number, level: any) => sum + level.skills.length, 0)
     }
   }
-  return totalCompleted
+  
+  return total
 })
 
-const totalSkillsCount = computed(() => {
-  // 估算總技能數，基於推薦技能樹
-  return recommendedSkillTrees.value.length * 15 // 每個技能樹約15個技能
+const completedSkillsCount = computed(() => {
+  let totalCompleted = 0
+  
+  // 計算所有技能樹中已完成的技能數量
+  for (const treeName in userProgress.value.skillTrees) {
+    const treeProgress = userProgress.value.skillTrees[treeName]
+    if (treeProgress && typeof treeProgress === 'object') {
+      // 遍歷技能樹中的每個技能
+      for (const skillId in treeProgress) {
+        const skill = treeProgress[skillId]
+        if (skill && skill.completed) {
+          totalCompleted++
+        }
+      }
+    }
+  }
+  
+  return totalCompleted
 })
 
 const skillProgress = computed(() => {
@@ -483,13 +614,50 @@ const skillProgress = computed(() => {
   return Math.min(100, Math.round((completedSkillsCount.value / totalSkillsCount.value) * 100))
 })
 
-// 任務統計 - 從進度數據計算
+// 任務統計 - 從 localStorage 和用戶進度中獲取任務數據
+const taskDataTrigger = ref(0) // 用於觸發任務數據重新計算
+
+const getTasksFromStorage = () => {
+  try {
+    // 觸發依賴更新
+    taskDataTrigger.value
+    
+    const savedProgress = localStorage.getItem('userProgress')
+    if (savedProgress) {
+      const progress = JSON.parse(savedProgress)
+      return {
+        available: progress.tasks?.available || [],
+        active: progress.tasks?.active || [],
+        completed: progress.tasks?.completed || [],
+        custom: progress.tasks?.custom || []
+      }
+    }
+  } catch (error) {
+    console.error('讀取任務資料失敗:', error)
+  }
+  
+  return {
+    available: [],
+    active: [],
+    completed: [],
+    custom: []
+  }
+}
+
+const taskData = computed(() => getTasksFromStorage())
+
+const availableTasksCount = computed(() => {
+  return taskData.value.available.length
+})
+
 const activeTasksCount = computed(() => {
-  return userProgress.value.activeTasks?.length || 0
+  return taskData.value.active.length + 
+         taskData.value.custom.filter((task: any) => task.status === 'active').length
 })
 
 const completedTasksCount = computed(() => {
-  return userProgress.value.completedTasks?.length || 0
+  return taskData.value.completed.length + 
+         taskData.value.custom.filter((task: any) => task.status === 'completed').length
 })
 
 const taskProgress = computed(() => {
@@ -497,6 +665,88 @@ const taskProgress = computed(() => {
   if (total === 0) return 0
   return Math.round((completedTasksCount.value / total) * 100)
 })
+
+// 詳細任務統計
+const detailedTaskStats = computed(() => {
+  const tasks = getTasksFromStorage()
+  
+  // 統計各類型任務
+  const categories = {
+    學習: 0,
+    健康: 0,
+    專業: 0,
+    實作: 0,
+    其他: 0
+  }
+  
+  // 統計可接取任務的分類
+  tasks.available.forEach((task: any) => {
+    const category = task.category || '其他'
+    if (categories.hasOwnProperty(category)) {
+      categories[category as keyof typeof categories]++
+    } else {
+      categories.其他++
+    }
+  })
+  
+  return {
+    total: {
+      available: tasks.available.length,
+      active: tasks.active.length,
+      completed: tasks.completed.length,
+      custom: tasks.custom.length
+    },
+    categories,
+    customActive: tasks.custom.filter((task: any) => task.status === 'active').length,
+    customCompleted: tasks.custom.filter((task: any) => task.status === 'completed').length
+  }
+})
+
+// 詳細技能樹統計
+const detailedSkillStats = computed(() => {
+  const stats = {
+    totalTrees: recommendedSkillTrees.value.length,
+    totalSkills: totalSkillsCount.value,
+    completedSkills: completedSkillsCount.value,
+    progressByTree: [] as Array<{
+      name: string,
+      completed: number,
+      total: number,
+      percentage: number
+    }>,
+  }
+  
+  // 計算每個推薦技能樹的進度
+  for (const tree of recommendedSkillTrees.value) {
+    const treeProgress = userProgress.value.skillTrees[tree.name] || {}
+    let completed = 0
+    let total = 0
+    
+    // 計算該技能樹的總技能數和已完成數
+    tree.levels.forEach((level: any) => {
+      total += level.skills.length
+      level.skills.forEach((skill: any) => {
+        if (treeProgress[skill.id]?.completed) {
+          completed++
+        }
+      })
+    })
+    
+    stats.progressByTree.push({
+      name: tree.name,
+      completed,
+      total,
+      percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+    })
+  }
+    return stats
+})
+
+// 成就系統相關計算屬性
+const achievementProgress = computed(() => completionPercentage.value)
+const totalAchievementsCount = computed(() => totalAchievements.value)
+const unlockedAchievementsCount = computed(() => unlockedCount.value)
+const recentAchievements = computed(() => recentUnlocked.value)
 
 // 生成技能樹學習活動記錄
 const generateSkillTreeActivities = () => {
@@ -849,6 +1099,85 @@ const goToHome = () => {
   navigateTo('/')
 }
 
+// 更新統計數據的函數
+const updateStats = () => {
+  console.log('📊 更新面板統計數據')
+  
+  // 觸發任務數據重新計算
+  taskDataTrigger.value++
+  
+  // 強制重新計算所有 computed 屬性
+  nextTick(() => {
+    console.log('🔢 技能統計 - 已完成:', completedSkillsCount.value, '總數:', totalSkillsCount.value)
+    console.log('📋 任務統計 - 可接取:', availableTasksCount.value, '進行中:', activeTasksCount.value, '已完成:', completedTasksCount.value)
+  })
+}
+
+// 調試統計數據
+const debugStats = () => {
+  console.log('=== 📊 面板統計調試 ===')
+  
+  // 檢查 localStorage 原始數據
+  const rawUserProgress = localStorage.getItem('userProgress')
+  console.log('🗂️ localStorage userProgress 原始數據:')
+  if (rawUserProgress) {
+    const parsed = JSON.parse(rawUserProgress)
+    console.log('  - 完整數據:', parsed)
+    console.log('  - 任務數據:', parsed.tasks)
+    if (parsed.tasks) {
+      console.log('    available:', parsed.tasks.available?.length || 0)
+      console.log('    active:', parsed.tasks.active?.length || 0) 
+      console.log('    completed:', parsed.tasks.completed?.length || 0)
+      console.log('    custom:', parsed.tasks.custom?.length || 0)
+    }
+  } else {
+    console.log('  - localStorage 中沒有 userProgress 數據')
+  }
+  
+  console.log('📊 getTasksFromStorage() 回傳:')
+  const taskStorageData = getTasksFromStorage()
+  console.log('  - available:', taskStorageData.available.length)
+  console.log('  - active:', taskStorageData.active.length)
+  console.log('  - completed:', taskStorageData.completed.length)
+  console.log('  - custom:', taskStorageData.custom.length)
+  
+  const skillStats = detailedSkillStats.value
+  console.log('🎯 技能樹詳細統計:')
+  console.log('  - 推薦技能樹數量:', skillStats.totalTrees)
+  console.log('  - 總技能數:', skillStats.totalSkills)
+  console.log('  - 已完成技能數:', skillStats.completedSkills)
+  console.log('  - 技能完成度:', skillProgress.value + '%')
+  console.log('  - 各技能樹進度:')
+  skillStats.progressByTree.forEach(tree => {
+    console.log(`    ${tree.name}: ${tree.completed}/${tree.total} (${tree.percentage}%)`)
+  })
+  
+  const taskStats = detailedTaskStats.value
+  console.log('📋 任務詳細統計:')
+  console.log('  - 可接取任務:', taskStats.total.available)
+  console.log('  - 進行中任務:', taskStats.total.active)
+  console.log('  - 已完成任務:', taskStats.total.completed)
+  console.log('  - 自訂任務總數:', taskStats.total.custom)
+  console.log('  - 自訂任務(進行中):', taskStats.customActive)
+  console.log('  - 自訂任務(已完成):', taskStats.customCompleted)
+  console.log('  - 任務分類統計:', taskStats.categories)
+  console.log('  - 任務完成度:', taskProgress.value + '%')
+  
+  console.log('👤 用戶進度:')
+  console.log('  - skillTrees 數據鍵數:', Object.keys(userProgress.value.skillTrees).length)
+  console.log('  - 用戶資料:', userProfile.value)
+  console.log('==================')
+}
+
+// 監聽 localStorage 變化
+if (process.client) {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'userProgress') {
+      updateStats()
+    }
+  })
+}
+
 // 監聽數據變化並自動保存
 watch([currentExp, currentLevel, userProgress, recentActivities], () => {
   if (user.value) {
@@ -863,22 +1192,66 @@ watch([isAuthenticated, user], ([authenticated, currentUser]) => {
   }
 }, { immediate: true })
 
-// 監聽頁面焦點，當用戶從其他頁面回到面板時刷新數據
-onMounted(() => {
-  if (isAuthenticated.value) {
-    loadUserProfile()
-  } else {
-    loading.value = false
-  }
-  
-  // 監聽頁面可見性變化
-  if (typeof document !== 'undefined') {
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && isAuthenticated.value) {
-        console.log('頁面重新可見，刷新活動數據...')
-        refreshActivities()
+// 頁面載入時自動載入和初始化數據
+onMounted(async () => {
+  console.log('🚀 面板頁面初始化')
+    try {
+    loading.value = true
+    
+    if (user.value) {
+      await loadUserProfile()
+      
+      // 初始化成就系統
+      loadAchievements()
+      
+      // 初始統計調試
+      setTimeout(() => {
+        debugStats()
+        
+        // 檢查成就進度
+        try {
+          const userProgressData = JSON.parse(localStorage.getItem('userProgress') || '{}')
+          checkAchievements(userProgressData)
+        } catch (error) {
+          console.error('檢查成就失敗:', error)
+        }
+      }, 2000) // 延遲2秒確保數據載入完成
+      
+      // 監聽 localStorage 變化，自動更新任務統計
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'userProgress') {
+          console.log('🔄 檢測到 userProgress 變化，更新任務統計')
+          taskDataTrigger.value++
+        }
       }
-    })
+      
+      // 添加事件監聽器
+      if (process.client) {
+        window.addEventListener('storage', handleStorageChange)
+        
+        // 頁面卸載時移除監聽器
+        onUnmounted(() => {
+          window.removeEventListener('storage', handleStorageChange)
+        })
+      }
+      
+      // 設定定期更新統計數據（每30秒）
+      const statsUpdateInterval = setInterval(() => {
+        // 觸發任務統計更新
+        updateStats()
+      }, 30000) // 30秒更新一次
+      
+      // 頁面卸載時清除定時器
+      onUnmounted(() => {
+        clearInterval(statsUpdateInterval)
+      })
+    } else {
+      console.log('❌ 用戶未登入')
+    }
+  } catch (error) {
+    console.error('❌ 面板初始化失敗:', error)
+  } finally {
+    loading.value = false
   }
 })
 </script>
